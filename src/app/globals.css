@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  --background: #f9f9f7;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --foreground: #1c1b1a;
+  --muted: #6b6a66;
+  --border: #e6e4de;
+
+  --brand: #0f6e6a;        /* deep teal — professional, trustworthy */
+  --brand-strong: #0a4f4c;
+  --brand-soft: #e4f3f1;
+  --accent: #e08a2b;       /* warm amber — gamified, "merry" energy */
+  --accent-soft: #fbead2;
+  --success: #0ca30c;
+  --warning: #d98c00;
+  --danger: #d03b3b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --background: #0d0d0d;
+    --surface: #18181a;
+    --surface-raised: #202023;
+    --foreground: #f4f3f0;
+    --muted: #a8a6a0;
+    --border: #2c2c2a;
+
+    --brand: #2fa89f;
+    --brand-strong: #59c3b9;
+    --brand-soft: #12302e;
+    --accent: #f0a84a;
+    --accent-soft: #3a2a12;
+    --success: #0ca30c;
+    --warning: #f0a84a;
+    --danger: #e66767;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-tajawal);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Data-viz tokens (see dataviz skill / references/palette.md) — scoped so chart
+   code reads roles, not raw hex, and light/dark swap in one place. */
+.viz-root {
+  color-scheme: light;
+  --viz-surface: #fcfcfb;
+  --viz-text-primary: #0b0b0b;
+  --viz-text-secondary: #52514e;
+  --viz-muted: #898781;
+  --viz-grid: #e1e0d9;
+  --viz-baseline: #c3c2b7;
+  --viz-series-1: #2a78d6; /* blue */
+  --viz-series-2: #eb6834; /* orange */
+  --viz-series-3: #1baf7a; /* aqua */
+  --viz-status-good: #0ca30c;
+  --viz-status-warning: #d98c00;
+  --viz-status-critical: #d03b3b;
+  --viz-seq-100: #cde2fb;
+  --viz-seq-300: #6da7ec;
+  --viz-seq-500: #256abf;
+  --viz-seq-700: #0d366b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .viz-root {
+    color-scheme: dark;
+    --viz-surface: #1a1a19;
+    --viz-text-primary: #ffffff;
+    --viz-text-secondary: #c3c2b7;
+    --viz-muted: #898781;
+    --viz-grid: #2c2c2a;
+    --viz-baseline: #383835;
+    --viz-series-1: #3987e5;
+    --viz-series-2: #d95926;
+    --viz-series-3: #199e70;
+    --viz-status-good: #0ca30c;
+    --viz-status-warning: #f0a84a;
+    --viz-status-critical: #e66767;
+    --viz-seq-100: #184f95;
+    --viz-seq-300: #2a78d6;
+    --viz-seq-500: #6da7ec;
+    --viz-seq-700: #cde2fb;
+  }
+}
+:root[data-theme="dark"] .viz-root {
+  color-scheme: dark;
+  --viz-surface: #1a1a19;
+  --viz-text-primary: #ffffff;
+  --viz-text-secondary: #c3c2b7;
+  --viz-muted: #898781;
+  --viz-grid: #2c2c2a;
+  --viz-baseline: #383835;
+  --viz-series-1: #3987e5;
+  --viz-series-2: #d95926;
+  --viz-series-3: #199e70;
+  --viz-status-good: #0ca30c;
+  --viz-status-warning: #f0a84a;
+  --viz-status-critical: #e66767;
+  --viz-seq-100: #184f95;
+  --viz-seq-300: #2a78d6;
+  --viz-seq-500: #6da7ec;
+  --viz-seq-700: #cde2fb;
+}
+
+@keyframes pop-in {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-pop-in {
+  animation: pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(360deg); opacity: 0.9; }
+}
+.animate-confetti {
+  animation: confetti-fall linear forwards;
+}
+
+@keyframes progress-grow {
+  from { transform: scaleX(var(--from, 0)); }
+  to { transform: scaleX(var(--to, 0)); }
+}

@@ -1,0 +1,199 @@
+// Prisma schema for the HR gamified testing platform.
+// Domain: item banks imported from Excel (matching the QA'd "Item Bank" format),
+// participants (test-takers), timed attempts, per-question answer logs, and
+// gamification (points/levels/badges).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Admin
+// ---------------------------------------------------------------------------
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Content: item banks imported from Excel workbooks (one workbook = one unit)
+// ---------------------------------------------------------------------------
+
+enum Difficulty {
+  MUBTADI // مبتدئ - beginner
+  MUTAWASSIT // متوسط - intermediate
+  IHTIRAFI // احترافي - professional
+}
+
+enum BloomLevel {
+  BLOOM1 // تذكر
+  BLOOM2 // فهم
+  BLOOM3 // تطبيق
+  BLOOM4 // تحليل
+  BLOOM5 // تقييم
+  BLOOM6 // ابتكار
+}
+
+enum DistractorType {
+  M // Misconception - تصور شائع خاطئ
+  P // Partial-truth - حقيقة جزئية
+  T // Transposition - نقل من سياق آخر
+  W // Wrong-framework - إطار خاطئ
+}
+
+model ItemBank {
+  id           String   @id @default(cuid())
+  code         String   @unique // e.g. UNIT-1
+  title        String
+  description  String?
+  sourceFile   String? // original uploaded file name
+  isActive     Boolean  @default(true)
+  // Raw copies of the Blueprint and QA Log sheets from the source workbook,
+  // kept for full traceability / display in the admin dashboard.
+  blueprintJson Json?
+  qaLogJson     Json?
+  importedAt   DateTime @default(now())
+
+  questions Question[]
+  attempts  Attempt[]
+}
+
+model Question {
+  id                    String         @id @default(cuid())
+  itemBank              ItemBank       @relation(fields: [itemBankId], references: [id], onDelete: Cascade)
+  itemBankId            String
+  externalCode          String // e.g. M-001, as given in the workbook
+  order                 Int // presentation order within the bank
+  language              String         @default("AR")
+  knowledgePath         String // المسار المعرفي
+  frameworkRef          String? // المرجع الإطاري
+  bloomLevel            BloomLevel
+  bloomLabel             String // original Arabic label, e.g. "بلوم 3 — التطبيق"
+  difficulty            Difficulty
+  difficultyLabel        String // original Arabic label
+  targetPValue          Float? // معامل الصعوبة المستهدف
+  targetDiscrimination   Float? // معامل التمييز المستهدف
+  estimatedTimeSeconds   Int // الزمن المقدر بالثانية — used to compare against actual time
+  pointsValue            Int // max points awarded for a correct answer (weighted by difficulty + Bloom level)
+  text                   String
+  sourceReference        String? // المرجع المصدري
+  reviewerNotes          String? // ملاحظات المراجع
+
+  choices   Choice[]
+  answerLogs AnswerLog[]
+
+  @@unique([itemBankId, externalCode])
+  @@index([itemBankId, order])
+}
+
+model Choice {
+  id              String          @id @default(cuid())
+  question        Question        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId      String
+  label           String // A / B / C / D
+  text            String
+  isCorrect       Boolean         @default(false)
+  justification   String // تبرير الإجابة الصحيحة أو تبرير المشتت
+  distractorType  DistractorType? // null when isCorrect = true
+
+  answerLogs AnswerLog[]
+
+  @@unique([questionId, label])
+}
+
+// ---------------------------------------------------------------------------
+// Test-takers and attempts
+// ---------------------------------------------------------------------------
+
+model Participant {
+  id         String   @id @default(cuid())
+  fullName   String
+  identifier String   @unique // email or employee ID, used as login key
+  createdAt  DateTime @default(now())
+
+  attempts       Attempt[]
+  badgesEarned   ParticipantBadge[]
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+model Attempt {
+  id            String        @id @default(cuid())
+  participant   Participant   @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participantId String
+  itemBank      ItemBank      @relation(fields: [itemBankId], references: [id], onDelete: Cascade)
+  itemBankId    String
+  status        AttemptStatus @default(IN_PROGRESS)
+  startedAt     DateTime      @default(now())
+  completedAt   DateTime?
+
+  totalQuestions Int      @default(0)
+  correctCount   Int      @default(0)
+  totalPoints    Int      @default(0)
+  maxPoints      Int      @default(0)
+  scorePercent   Float?   // correctCount / totalQuestions * 100
+  level          Int      @default(1)
+  levelTitle     String?
+
+  answerLogs AnswerLog[]
+  badges     ParticipantBadge[]
+
+  @@index([participantId])
+  @@index([itemBankId])
+}
+
+model AnswerLog {
+  id              String    @id @default(cuid())
+  attempt         Attempt   @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  attemptId       String
+  question        Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId      String
+  chosenChoice    Choice?   @relation(fields: [chosenChoiceId], references: [id])
+  chosenChoiceId  String?
+  isCorrect       Boolean
+  timeSpentMs     Int // actual time the participant spent on this question
+  pointsAwarded   Int      @default(0)
+  answeredAt      DateTime @default(now())
+
+  @@unique([attemptId, questionId])
+  @@index([questionId])
+}
+
+// ---------------------------------------------------------------------------
+// Gamification
+// ---------------------------------------------------------------------------
+
+model Badge {
+  id          String @id @default(cuid())
+  code        String @unique
+  title       String
+  description String
+  icon        String // emoji used in the UI
+
+  awards ParticipantBadge[]
+}
+
+model ParticipantBadge {
+  id            String      @id @default(cuid())
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participantId String
+  badge         Badge       @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  badgeId       String
+  attempt       Attempt?    @relation(fields: [attemptId], references: [id], onDelete: SetNull)
+  attemptId     String?
+  awardedAt     DateTime    @default(now())
+
+  @@unique([participantId, badgeId, attemptId])
+}
