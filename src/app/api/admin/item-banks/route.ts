@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentAdmin } from "@/lib/auth";
+import { isAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { parseItemBankWorkbook, ItemBankImportError } from "@/lib/itemBankImport";
 import { createItemBankInDb, setActiveItemBank } from "@/lib/itemBankService";
 
 export async function POST(request: NextRequest) {
-  const admin = await getCurrentAdmin();
+  const admin = await isAdmin();
   if (!admin) return NextResponse.json({ error: "غير مصرّح" }, { status: 401 });
 
   const formData = await request.formData();

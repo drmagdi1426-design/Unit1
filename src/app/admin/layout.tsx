@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCurrentAdmin } from "@/lib/auth";
+import { isAdmin } from "@/lib/auth";
 import { adminLogoutAction } from "./actions";
 
 const NAV_ITEMS = [
@@ -10,7 +10,7 @@ const NAV_ITEMS = [
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const admin = await getCurrentAdmin();
+  const admin = await isAdmin();
 
   if (!admin) {
     // Only reachable at /admin/login (everything else is guarded by proxy.ts).
@@ -37,7 +37,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             ))}
           </nav>
           <div className="flex items-center gap-3">
-            <span className="text-sm text-muted">{admin.username}</span>
             <form action={adminLogoutAction}>
               <button className="rounded-lg bg-danger/10 px-3 py-2 text-sm font-bold text-danger hover:bg-danger/20">
                 تسجيل الخروج

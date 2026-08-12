@@ -40,8 +40,10 @@ export async function verifySession(token: string | undefined | null): Promise<S
   }
 }
 
-export function signAdminSession(adminId: string) {
-  return signSession({ sub: adminId, role: "admin" }, ADMIN_MAX_AGE_SEC);
+// Admin sessions have no per-user identity (see ADMIN_ACCESS_CODE) — `sub`
+// is a fixed placeholder, present only because the JWT payload shape is shared.
+export function signAdminSession() {
+  return signSession({ sub: "admin", role: "admin" }, ADMIN_MAX_AGE_SEC);
 }
 
 export function signParticipantSession(participantId: string) {

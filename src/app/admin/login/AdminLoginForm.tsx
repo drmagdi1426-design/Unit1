@@ -17,28 +17,18 @@ export default function AdminLoginForm() {
       <form action={formAction} className="flex flex-col gap-5">
         <input type="hidden" name="next" value={next} />
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="username" className="text-sm font-bold text-muted">
-            اسم المستخدم
+          <label htmlFor="code" className="text-sm font-bold text-muted">
+            رمز الدخول
           </label>
           <input
-            id="username"
-            name="username"
-            required
-            autoComplete="username"
-            className="rounded-xl border border-border bg-background px-4 py-3 text-base outline-none ring-brand/30 focus:ring-2"
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="password" className="text-sm font-bold text-muted">
-            كلمة المرور
-          </label>
-          <input
-            id="password"
-            name="password"
+            id="code"
+            name="code"
             type="password"
+            inputMode="numeric"
+            autoComplete="off"
+            autoFocus
             required
-            autoComplete="current-password"
-            className="rounded-xl border border-border bg-background px-4 py-3 text-base outline-none ring-brand/30 focus:ring-2"
+            className="rounded-xl border border-border bg-background px-4 py-3 text-center text-2xl font-extrabold tracking-[0.3em] outline-none ring-brand/30 focus:ring-2"
           />
         </div>
         {state.error && (

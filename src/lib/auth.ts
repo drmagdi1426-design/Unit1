@@ -12,21 +12,20 @@ import {
   verifySession,
 } from "@/lib/session";
 
-export async function getCurrentAdmin() {
+// Admin auth has no per-user account: everyone who knows ADMIN_ACCESS_CODE
+// gets the same admin session. isAdmin() just checks that session is valid.
+export async function isAdmin(): Promise<boolean> {
   const token = (await cookies()).get(ADMIN_COOKIE)?.value;
   const session = await verifySession(token);
-  if (!session || session.role !== "admin") return null;
-  return prisma.adminUser.findUnique({ where: { id: session.sub } });
+  return !!session && session.role === "admin";
 }
 
-export async function requireAdmin() {
-  const admin = await getCurrentAdmin();
-  if (!admin) redirect("/admin/login");
-  return admin;
+export async function requireAdmin(): Promise<void> {
+  if (!(await isAdmin())) redirect("/admin/login");
 }
 
-export async function setAdminCookie(adminId: string) {
-  const token = await signAdminSession(adminId);
+export async function setAdminCookie() {
+  const token = await signAdminSession();
   (await cookies()).set(ADMIN_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

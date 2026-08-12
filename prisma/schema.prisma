@@ -12,16 +12,7 @@ datasource db {
   provider = "postgresql"
 }
 
-// ---------------------------------------------------------------------------
-// Admin
-// ---------------------------------------------------------------------------
-
-model AdminUser {
-  id           String   @id @default(cuid())
-  username     String   @unique
-  passwordHash String
-  createdAt    DateTime @default(now())
-}
+// Admin auth has no per-user account — see ADMIN_ACCESS_CODE in src/lib/auth.ts.
 
 // ---------------------------------------------------------------------------
 // Content: item banks imported from Excel workbooks (one workbook = one unit)

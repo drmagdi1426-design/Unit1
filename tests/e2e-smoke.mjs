@@ -2,7 +2,7 @@
 //
 // Usage:
 //   npm run build && npm run start &
-//   ADMIN_USERNAME=admin ADMIN_PASSWORD=... BASE_URL=http://localhost:3000 node tests/e2e-smoke.mjs
+//   ADMIN_ACCESS_CODE=2026 BASE_URL=http://localhost:3000 node tests/e2e-smoke.mjs
 //
 // Walks the full flow once: register -> answer every question -> results ->
 // leaderboard -> admin login -> overview/questions/participants pages ->
@@ -12,11 +12,10 @@
 import { chromium } from "playwright";
 
 const BASE = process.env.BASE_URL ?? "http://localhost:3000";
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const ADMIN_ACCESS_CODE = process.env.ADMIN_ACCESS_CODE;
 
-if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
-  console.error("Set ADMIN_USERNAME and ADMIN_PASSWORD env vars (same values as your .env).");
+if (!ADMIN_ACCESS_CODE) {
+  console.error("Set ADMIN_ACCESS_CODE env var (same value as your .env).");
   process.exit(1);
 }
 
@@ -64,8 +63,7 @@ async function main() {
   console.log("✔ Leaderboard loaded");
 
   await page.goto(BASE + "/admin/login");
-  await page.fill("#username", ADMIN_USERNAME);
-  await page.fill("#password", ADMIN_PASSWORD);
+  await page.fill("#code", ADMIN_ACCESS_CODE);
   await page.click("text=تسجيل الدخول");
   await page.waitForURL(BASE + "/admin", { timeout: 15000 });
   await page.waitForSelector("text=نظرة عامة");

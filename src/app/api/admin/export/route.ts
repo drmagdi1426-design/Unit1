@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCurrentAdmin } from "@/lib/auth";
+import { isAdmin } from "@/lib/auth";
 import { getParticipantsRoster } from "@/lib/analytics";
 import { getActiveItemBank } from "@/lib/examService";
 import { prisma } from "@/lib/prisma";
 import { toCsv } from "@/lib/csv";
 
 export async function GET(request: NextRequest) {
-  const admin = await getCurrentAdmin();
+  const admin = await isAdmin();
   if (!admin) {
     return NextResponse.json({ error: "غير مصرّح" }, { status: 401 });
   }

@@ -1,26 +1,18 @@
 import "dotenv/config";
 import { readFileSync } from "fs";
 import path from "path";
-import bcrypt from "bcryptjs";
 import { prisma } from "../src/lib/prisma";
 import { parseItemBankWorkbook } from "../src/lib/itemBankImport";
 import { createItemBankInDb } from "../src/lib/itemBankService";
 import { ensureBadgeCatalogSeeded } from "../src/lib/gamification";
 
 async function main() {
-  // 1. Admin account
-  const username = process.env.ADMIN_USERNAME;
-  const password = process.env.ADMIN_PASSWORD;
-  if (!username || !password) {
-    throw new Error("ADMIN_USERNAME and ADMIN_PASSWORD must be set in .env before seeding.");
+  // 1. Admin access code — not stored in the DB, just a sanity check that
+  // it's configured (see ADMIN_ACCESS_CODE in src/lib/auth.ts / .env).
+  if (!process.env.ADMIN_ACCESS_CODE) {
+    throw new Error("ADMIN_ACCESS_CODE must be set in .env before seeding.");
   }
-  const passwordHash = await bcrypt.hash(password, 10);
-  await prisma.adminUser.upsert({
-    where: { username },
-    create: { username, passwordHash },
-    update: { passwordHash },
-  });
-  console.log(`✔ Admin user "${username}" ready.`);
+  console.log("✔ ADMIN_ACCESS_CODE is set.");
 
   // 2. Badge catalog
   await ensureBadgeCatalogSeeded();

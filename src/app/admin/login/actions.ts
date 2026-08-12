@@ -1,34 +1,39 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { createHash, timingSafeEqual } from "crypto";
 import { setAdminCookie } from "@/lib/auth";
 
 export type AdminLoginState = { error: string | null };
+
+// timingSafeEqual throws if the two buffers differ in length, which a plain
+// Buffer.from(code) would for any wrong-length guess — hashing first fixes
+// both inputs at 32 bytes, so the comparison is always safe to run and
+// still constant-time.
+function codeMatches(submitted: string, expected: string): boolean {
+  const a = createHash("sha256").update(submitted).digest();
+  const b = createHash("sha256").update(expected).digest();
+  return timingSafeEqual(a, b);
+}
 
 export async function adminLoginAction(
   _prev: AdminLoginState,
   formData: FormData
 ): Promise<AdminLoginState> {
-  const username = String(formData.get("username") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
+  const code = String(formData.get("code") ?? "").trim();
   const next = String(formData.get("next") ?? "/admin");
 
-  if (!username || !password) {
-    return { error: "الرجاء إدخال اسم المستخدم وكلمة المرور." };
+  const expected = process.env.ADMIN_ACCESS_CODE;
+  if (!expected) {
+    return { error: "لم يتم إعداد رمز دخول المسؤول على الخادم (ADMIN_ACCESS_CODE)." };
+  }
+  if (!code) {
+    return { error: "الرجاء إدخال رمز الدخول." };
+  }
+  if (!codeMatches(code, expected)) {
+    return { error: "رمز الدخول غير صحيح." };
   }
 
-  const admin = await prisma.adminUser.findUnique({ where: { username } });
-  if (!admin) {
-    return { error: "بيانات الدخول غير صحيحة." };
-  }
-
-  const ok = await bcrypt.compare(password, admin.passwordHash);
-  if (!ok) {
-    return { error: "بيانات الدخول غير صحيحة." };
-  }
-
-  await setAdminCookie(admin.id);
+  await setAdminCookie();
   redirect(next.startsWith("/admin") ? next : "/admin");
 }
