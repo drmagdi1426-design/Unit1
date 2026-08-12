@@ -125,18 +125,27 @@ ADMIN_USERNAME=admin ADMIN_PASSWORD=... npm run test:e2e
 
 1. أنشئ مشروع Postgres مجاني على [Supabase](https://supabase.com) أو
    [Neon](https://neon.tech).
-2. انسخ سلسلة الاتصال (لـ Vercel استخدم رابط الـ **pooled connection**، عادة
-   على المنفذ 6543 مع `?pgbouncer=true` في Supabase).
+2. انسخ **رابطي** الاتصال (وليس رابطاً واحداً) — Prisma Migrate يحتاج اتصالاً
+   مباشراً غير مجمَّع (pooled) لأن قفل الترحيل (advisory lock) الذي يستخدمه
+   لا يعمل عبر PgBouncer، بينما التطبيق نفسه في وقت التشغيل يفضّل الاتصال
+   المجمَّع (أفضل مع Vercel/serverless):
+   - `DATABASE_URL` = الرابط **المجمَّع (pooled)** — في Neon يحتوي المضيف على
+     `-pooler`، في Supabase هو رابط "Transaction pooler" على المنفذ 6543 مع
+     `?pgbouncer=true`.
+   - `DIRECT_URL` = **نفس الرابط لكن بدون** `-pooler` (Neon) أو رابط
+     "Session"/المباشر (Supabase، عادة المنفذ 5432).
 3. على Vercel: استورد المستودع، وأضف متغيرات البيئة التالية في إعدادات
    المشروع (Project Settings → Environment Variables) — على الأقل لبيئة
    Production، ويفضَّل أيضاً لـ Preview إن أردت اختبار فروع أخرى:
-   - `DATABASE_URL`
+   - `DATABASE_URL` (المجمَّع)
+   - `DIRECT_URL` (المباشر — بدونه ستفشل الهجرات برسالة `P1002` عبر Neon/Supabase)
    - `SESSION_SECRET` (قيمة عشوائية طويلة، مثال: `openssl rand -base64 32`)
    - `ADMIN_USERNAME`, `ADMIN_PASSWORD`
 4. انشر. أمر البناء `npm run build` يشغّل تلقائياً
    `prisma generate && prisma migrate deploy && next build` — أي أن **هجرات
    قاعدة البيانات تُطبَّق تلقائياً في كل عملية بناء على Vercel** طالما
-   `DATABASE_URL` مضبوط، دون أي خطوة يدوية.
+   `DIRECT_URL` (أو `DATABASE_URL` إن كانت غير مجمَّعة أصلاً) مضبوط، دون أي
+   خطوة يدوية.
 5. **خطوة يدوية لمرة واحدة فقط بعد أول نشر ناجح**: الزرع الأولي
    (`db:seed`) لا يعمل تلقائياً على Vercel لأنه يُنشئ بيانات (حساب المسؤول،
    كتالوج الشارات، بنك أسئلة الوحدة 1) وليس مجرد هيكل جداول. شغّله مرة واحدة
