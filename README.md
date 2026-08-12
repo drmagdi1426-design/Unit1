@@ -128,17 +128,29 @@ ADMIN_USERNAME=admin ADMIN_PASSWORD=... npm run test:e2e
 2. انسخ سلسلة الاتصال (لـ Vercel استخدم رابط الـ **pooled connection**، عادة
    على المنفذ 6543 مع `?pgbouncer=true` في Supabase).
 3. على Vercel: استورد المستودع، وأضف متغيرات البيئة التالية في إعدادات
-   المشروع (Project Settings → Environment Variables):
+   المشروع (Project Settings → Environment Variables) — على الأقل لبيئة
+   Production، ويفضَّل أيضاً لـ Preview إن أردت اختبار فروع أخرى:
    - `DATABASE_URL`
    - `SESSION_SECRET` (قيمة عشوائية طويلة، مثال: `openssl rand -base64 32`)
    - `ADMIN_USERNAME`, `ADMIN_PASSWORD`
-4. قبل أول نشر (أو من جهازك محلياً بنفس `DATABASE_URL`)، شغّل:
+4. انشر. أمر البناء `npm run build` يشغّل تلقائياً
+   `prisma generate && prisma migrate deploy && next build` — أي أن **هجرات
+   قاعدة البيانات تُطبَّق تلقائياً في كل عملية بناء على Vercel** طالما
+   `DATABASE_URL` مضبوط، دون أي خطوة يدوية.
+5. **خطوة يدوية لمرة واحدة فقط بعد أول نشر ناجح**: الزرع الأولي
+   (`db:seed`) لا يعمل تلقائياً على Vercel لأنه يُنشئ بيانات (حساب المسؤول،
+   كتالوج الشارات، بنك أسئلة الوحدة 1) وليس مجرد هيكل جداول. شغّله مرة واحدة
+   من أي جهاز يملك اتصالاً عادياً بالإنترنت (لا يعمل هذا من بيئة الحاويات
+   المعزولة التي بُني بها هذا المشروع، إذ لا تسمح سياسة الشبكة فيها بالاتصال
+   المباشر بقواعد بيانات Postgres):
    ```bash
-   npm run db:deploy   # يطبّق ملفات الهجرة (migrations) على القاعدة السحابية
-   npm run db:seed     # يزرع حساب المسؤول والشارات وبنك أسئلة الوحدة 1
+   git clone <repo-url> && cd <repo> && npm install
+   echo 'DATABASE_URL="<نفس القيمة المضبوطة في Vercel>"' > .env
+   echo 'ADMIN_USERNAME="admin"' >> .env
+   echo 'ADMIN_PASSWORD="<كلمة مرور قوية من اختيارك>"' >> .env
+   npm run db:seed
    ```
-5. انشر (Vercel يبني تلقائياً عبر `npm run build`، والذي يشغّل
-   `prisma generate` قبل `next build`).
+   بعدها سجّل الدخول من `/admin/login` بنفس `ADMIN_USERNAME`/`ADMIN_PASSWORD`.
 
 ### بدائل أخرى
 
