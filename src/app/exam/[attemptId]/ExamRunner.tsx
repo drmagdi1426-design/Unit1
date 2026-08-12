@@ -117,12 +117,6 @@ export default function ExamRunner({
             <span className="rounded-full bg-brand-soft px-3 py-1 text-brand-strong">
               {question.knowledgePath}
             </span>
-            <span className="rounded-full bg-accent-soft px-3 py-1 text-accent">
-              {question.bloomLabel}
-            </span>
-            <span className="rounded-full bg-border px-3 py-1 text-muted">
-              {question.difficultyLabel}
-            </span>
           </div>
 
           <h2 className="mb-6 text-xl font-extrabold leading-relaxed text-foreground">

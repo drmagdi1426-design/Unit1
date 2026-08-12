@@ -62,6 +62,40 @@ body {
   color: var(--foreground);
 }
 
+/* Printed reports (e.g. the personalized results page) should always read as
+   a clean, professional light document — regardless of the viewer's OS/browser
+   dark-mode setting — and browsers strip background colors by default unless
+   told otherwise. */
+@media print {
+  :root {
+    color-scheme: light;
+    --background: #ffffff;
+    --surface: #ffffff;
+    --surface-raised: #ffffff;
+    --foreground: #1c1b1a;
+    --muted: #52514e;
+    --border: #d8d6cf;
+    --brand: #0f6e6a;
+    --brand-strong: #0a4f4c;
+    --brand-soft: #e4f3f1;
+    --accent: #e08a2b;
+    --accent-soft: #fbead2;
+    --success: #0ca30c;
+    --warning: #a86400;
+    --danger: #d03b3b;
+  }
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  body {
+    background: #ffffff;
+  }
+  a[href]::after {
+    content: none !important;
+  }
+}
+
 /* Data-viz tokens (see dataviz skill / references/palette.md) — scoped so chart
    code reads roles, not raw hex, and light/dark swap in one place. */
 .viz-root {

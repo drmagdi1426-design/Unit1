@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getParticipantDetail } from "@/lib/analytics";
 import { Card } from "@/components/ui";
+import DeleteParticipantButton from "../DeleteParticipantButton";
 
 const STATUS_LABEL: Record<string, string> = {
   IN_PROGRESS: "قيد التنفيذ",
@@ -20,9 +21,12 @@ export default async function ParticipantDetailPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <Link href="/admin/participants" className="text-sm font-bold text-brand hover:underline">
-        ← العودة لقائمة المشاركين
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link href="/admin/participants" className="text-sm font-bold text-brand hover:underline">
+          ← العودة لقائمة المشاركين
+        </Link>
+        <DeleteParticipantButton participantId={participant.id} participantName={participant.fullName} />
+      </div>
 
       <Card className="p-6">
         <h1 className="text-2xl font-extrabold">{participant.fullName}</h1>

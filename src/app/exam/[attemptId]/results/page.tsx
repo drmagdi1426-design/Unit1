@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireParticipant } from "@/lib/auth";
 import { Card, PageShell, Button, StatChip } from "@/components/ui";
+import PrintButton from "./PrintButton";
 
 export default async function ResultsPage({
   params,
@@ -38,7 +39,7 @@ export default async function ResultsPage({
   return (
     <PageShell className="max-w-3xl">
       {celebrate && <Confetti />}
-      <Card className="animate-pop-in relative overflow-hidden p-6 text-center sm:p-8">
+      <Card className="animate-pop-in relative overflow-hidden break-inside-avoid p-6 text-center sm:p-8">
         <div className="mb-2 text-5xl">{scorePercent >= 90 ? "🏆" : scorePercent >= 70 ? "🎉" : "💪"}</div>
         <h1 className="text-2xl font-extrabold text-foreground">
           أحسنت، {participant.fullName}!
@@ -65,7 +66,7 @@ export default async function ResultsPage({
       </Card>
 
       {attempt.badges.length > 0 && (
-        <Card className="animate-pop-in mt-6 p-6">
+        <Card className="animate-pop-in mt-6 break-inside-avoid p-6">
           <h2 className="mb-4 text-lg font-extrabold">الشارات المكتسبة 🏅</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {attempt.badges.map((b) => (
@@ -85,7 +86,7 @@ export default async function ResultsPage({
           {attempt.answerLogs.map((log) => {
             const correct = log.question.choices.find((c) => c.isCorrect)!;
             return (
-              <div key={log.id} className="rounded-xl border border-border p-4">
+              <div key={log.id} className="break-inside-avoid rounded-xl border border-border p-4">
                 <div className="mb-2 flex items-start justify-between gap-2">
                   <p className="font-bold leading-relaxed">{log.question.text}</p>
                   <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${log.isCorrect ? "bg-success/10 text-success" : "bg-danger/10 text-danger"}`}>
@@ -110,7 +111,8 @@ export default async function ResultsPage({
         </div>
       </Card>
 
-      <div className="mt-6 flex flex-wrap justify-center gap-3 pb-8">
+      <div className="mt-6 flex flex-wrap justify-center gap-3 pb-8 print:hidden">
+        <PrintButton />
         <Link href="/leaderboard">
           <Button variant="secondary">لوحة المتصدرين 🏆</Button>
         </Link>
@@ -132,7 +134,7 @@ function Confetti() {
   const pieces = Array.from({ length: 24 });
   const colors = ["#e08a2b", "#0f6e6a", "#e34948", "#eda100", "#4a3aa7"];
   return (
-    <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden" aria-hidden>
+    <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden print:hidden" aria-hidden>
       {pieces.map((_, i) => (
         <span
           key={i}

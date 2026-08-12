@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getActiveItemBank } from "@/lib/examService";
 import { getParticipantsRoster } from "@/lib/analytics";
 import { Card, Button } from "@/components/ui";
+import DeleteParticipantButton from "./DeleteParticipantButton";
 
 export default async function AdminParticipantsPage() {
   const bank = await getActiveItemBank();
@@ -36,6 +37,7 @@ export default async function AdminParticipantsPage() {
                 <th className="py-2 pr-2 font-bold">الشارات</th>
                 <th className="py-2 pr-2 font-bold">آخر نشاط</th>
                 <th className="py-2 pr-2 font-bold"></th>
+                <th className="py-2 pr-2 font-bold"></th>
               </tr>
             </thead>
             <tbody>
@@ -58,11 +60,14 @@ export default async function AdminParticipantsPage() {
                       عرض التفاصيل ←
                     </Link>
                   </td>
+                  <td className="py-3 pr-2">
+                    <DeleteParticipantButton participantId={p.id} participantName={p.fullName} />
+                  </td>
                 </tr>
               ))}
               {roster.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-muted">
+                  <td colSpan={8} className="py-8 text-center text-muted">
                     لا يوجد مشاركون بعد.
                   </td>
                 </tr>
